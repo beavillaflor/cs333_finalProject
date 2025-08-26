@@ -11,12 +11,20 @@ export function tooltip(element, text) { // export so can use in plane seating
     tooltipDiv.textContent = text;
     document.body.appendChild(tooltipDiv);
     
-    // position tooltip above the seat
-    const rect = element.getBoundingClientRect(); // get the position of the seat
-    tooltipDiv.style.left = rect.left + rect.width / 2 + 'px';
-    tooltipDiv.style.top = rect.top - 10 + 'px';
+    //updated code starts here
+    tooltipDiv.style.position = 'fixed';
+    tooltipDiv.style.pointerEvents = 'none';
+    tooltipDiv.style.left = event.clientX + 'px';
+    tooltipDiv.style.top = event.clientY - 10 + 'px';
   }
   
+    function moveTooltip(event) {
+    if (tooltipDiv) {
+      tooltipDiv.style.left = event.clientX + 'px';
+      tooltipDiv.style.top = event.clientY - 10 + 'px';
+    }
+  }
+
   function hideTooltip() {
     if (tooltipDiv) {
       tooltipDiv.remove();
@@ -25,11 +33,14 @@ export function tooltip(element, text) { // export so can use in plane seating
   }
   
   element.addEventListener('mouseenter', showTooltip);
+  element.addEventListener('mousemove', moveTooltip);
   element.addEventListener('mouseleave', hideTooltip);
   
   return {
     destroy() {
       element.removeEventListener('mouseenter', showTooltip);
+      element.removeEventListener('mousemove', moveTooltip);
+      //updated code ends here
       element.removeEventListener('mouseleave', hideTooltip);
       if (tooltipDiv) tooltipDiv.remove();
     },
