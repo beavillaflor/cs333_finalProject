@@ -3,7 +3,7 @@
     import Plot from "./Plot.svelte";
 
     let value;
-    const nsteps = 6
+    const nsteps = 4
     const steps = Array.from(Array(nsteps).keys())
 
     let size = 20;
@@ -15,10 +15,8 @@
     let text = [
         "Data from OpenDoors shows a nearly year-on-year increase of international students coming to the United States.",
         "But who are these students, and where do they come from?",
-        "Text 3",
-        "Text 4",
-        "Text 5",
-        "Text 6",
+        "A plane from China has just landed with 100 students on board. But what are they all here to study? Have a look at their seats to find out.",
+        "Imagine instead that this plane of 100 international students is arriving from the United Kingdom. Let’s see how their fields of study compare to those of students from China.",
     ];
 </script>
 
@@ -31,7 +29,7 @@
             <Scroll bind:value>
                 {#each steps as step, i}
                     <div class="step" class:active={value === i}>
-                        <div class="step-content">{text[i]}</div>
+                        <div class="step-content">{@html text[i]}</div>
                     </div>
                 {/each}
                 <div class="spacer"></div>

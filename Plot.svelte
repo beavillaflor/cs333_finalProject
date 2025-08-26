@@ -5,17 +5,20 @@
   import { line } from "d3-shape";
   import { extent } from "d3-array";
   import { fade } from "svelte/transition";
+  import PlaneSeating from "./PlaneSeating.svelte";
 
   let { scrollIndex = $bindable() } = $props();
 
   let enrollmentData = $state();
   let countryData = $state();
+  let fieldData = $state();
 
   onMount(async () => {
     enrollmentData = await csv(
       "https://raw.githubusercontent.com/nguyencomputing/cs333_finalProject/refs/heads/main/enrollmentData.csv"
     );
-    countryData = await csv('https://raw.githubusercontent.com/beavillaflor/cs333_finalProject/refs/heads/main/countryData.csv')
+    countryData = await csv('https://raw.githubusercontent.com/beavillaflor/cs333_finalProject/refs/heads/main/countryData.csv');
+    fieldData = await csv('https://raw.githubusercontent.com/amiemasih/cs333_finalProject/refs/heads/main/fieldsOfStudy.csv');
   });
 
   let spacing = 40;
@@ -24,8 +27,8 @@
 
   // bump right margin so the plane doesn't clip
   let margin = { top: 20, left: 70, bottom: 40, right: 50 };
-  let width = column * spacing + margin.left + margin.right;
-  let height = rows * spacing + 80;
+  let width = column * spacing + margin.left + margin.right + 100; //increased width for plane seating and legend
+  let height = rows * spacing + 100; // increased height too
 
   let padding = 20;
 
@@ -48,6 +51,25 @@
             }))
         });
 
+  let fieldDataset = $derived.by(() => {
+    if (!fieldData) return [];
+    return fieldData.map((d) => ({
+      country: d["Place of Origin"],
+      business: parseFloat(d["Business and Management"]) || 0,
+      education: parseFloat(d["Education"]) || 0,
+      engineering: parseFloat(d["Engineering"]) || 0,
+      fineArts: parseFloat(d["Fine and Applied Arts"]) || 0,
+      health: parseFloat(d["Health Professions"]) || 0,
+      humanities: parseFloat(d["Humanities"]) || 0,
+      intensiveEnglish: parseFloat(d["Intensive English"]) || 0,
+      mathCS: parseFloat(d["Math and Computer Science"]) || 0,
+      physicalLife: parseFloat(d["Physical and Life Sciences"]) || 0,
+      socialSciences: parseFloat(d["Social Sciences"]) || 0,
+      otherFields: parseFloat(d["Other Fields of Study"]) || 0,
+      undeclared: parseFloat(d["Undeclared"]) || 0
+    }));
+  });
+
   const innerW = $derived(width - margin.left - margin.right);
   const innerH = $derived(height - margin.top - margin.bottom);
 
@@ -58,20 +80,44 @@
 
   const yScale = $derived.by(() => {
     if (!enrollmentDataset.length) return null;
-    return scaleLinear()
-      .domain([0, Math.max(...enrollmentDataset.map((d) => d.students))])
-      .nice()
-      .range([innerH, 0]);
+    return scaleLinear().domain([0, Math.max(...enrollmentDataset.map((d) => d.students))]).nice().range([innerH, 0]);
   });
+
+  function formatTick(value) {
+    if (value === 0) return "0";
+    if (value >= 1_000_000) {
+      const num = value / 1_000_000;
+      return num % 1 === 0 ? num + "m" : num.toFixed(1) + "m";
+    }
+    if (value >= 1_000) {
+      const num = value / 1_000;
+      return num % 1 === 0 ? num + "k" : num.toFixed(1) + "k";
+    }
+    return value;
+  }
 
   const xScaleBea = $derived.by(() => {
     if (!countryDataset.length) return null;
     return scaleBand().domain(countryDataset.map(d => d.country)).range([0, innerW]).padding(0.1);
   });
 
+  const maxCount = $derived(() =>
+    countryDataset.length ? Math.max(...countryDataset.map(d => d.count23)) : 0
+  );
+
   const yScaleBea = $derived.by(() => {
     if (!countryDataset.length) return null;
-    return scaleLinear().domain(extent(countryDataset, (d) => d.count23)).range([innerH, 0]);
+    const max = Math.max(...countryDataset.map(d => d.count23));
+    const upper = max > 0 ? max : 1; 
+    return scaleLinear().domain([0, upper]).nice().range([innerH, 0]);
+  });
+
+  const yTicksBea = $derived.by(() => {
+    if (!yScaleBea) return [];
+    const top = yScaleBea.domain()[1];
+    const auto = yScaleBea.ticks(6);
+    const set = new Set([0, ...auto, top]);
+    return Array.from(set).sort((a, b) => a - b);
   });
 
   const lineGen = $derived.by(() => {
@@ -101,6 +147,21 @@
 
     return { x: x2, y: y2 };
   });
+
+  // plane seating scales
+  const planeXScale = $derived.by(() => {
+    if (!innerW) return null;
+    return scaleLinear()
+      .domain([0, 100])  // 0-100 seats
+      .range([0, innerW]);   
+  });
+
+  const planeYScale = $derived.by(() => {
+    if (!innerH) return null;
+    return scaleLinear()
+      .domain([0, 10])  // data range 0-10 rows
+      .range([0, innerH]); 
+  });
 </script>
 
 <svg width={width} height={height}>
@@ -128,7 +189,7 @@
           {#each yScale.ticks(5) as s}
             <line x1={-5} x2={5} y1={yScale(s)} y2={yScale(s)} stroke="#888" stroke-width="2" />
             <text x={-10} y={yScale(s) + 4} text-anchor="end" font-size="13" font-weight="bold" fill="#555">
-              {Math.round(s / 1000)}k
+              {formatTick(s)}
             </text>
           {/each}
         {/if}
@@ -140,7 +201,7 @@
 
         <!-- Line plot -->
         {#if lineGen}
-          <path d={lineGen(enrollmentDataset)} fill="none" stroke="steelblue" stroke-width="2" />
+          <path d={lineGen(enrollmentDataset)} fill="none" stroke="#4477AA" stroke-width="2" />
         {/if}
 
         {#if plane}
@@ -178,25 +239,45 @@
           Students
         </text>
         {#if yScaleBea}
-          {#each yScaleBea.ticks(5) as s}
+          {#each yTicksBea as s}
             <line x1={-5} x2={5} y1={yScaleBea(s)} y2={yScaleBea(s)} stroke="#888" stroke-width="2" />
             <text x={-10} y={yScaleBea(s) + 4} text-anchor="end" font-size="13" font-weight="bold" fill="#555">
-              {Math.round(s / 1000)}k
+              {s >= 1000 ? Math.round(s / 1000) + 'k' : s}
             </text>
           {/each}
-        {/if}
-        {#each countryDataset as d}
+
+          {#each countryDataset as d}
             <g class="country {d.country}">
-                <rect 
+              <rect
                 x={xScaleBea(d.country)}
                 y={yScaleBea(d.count23)}
                 width={xScaleBea.bandwidth()}
-                height={innerH - yScaleBea(d.count23)}
-                fill="steelblue"/>
+                height={Math.max(0, innerH - yScaleBea(d.count23))}
+                fill="#4477AA"
+              />
             </g>
-        {/each}
+          {/each}
+        {/if}
     </g>
     {/if}
-  </g>
-</svg>
+     </g>
+
+       <!-- PLANE SEATING SECTION -->
+    <g transform="translate({margin.left}, {margin.top})">
+      {#if scrollIndex == 2 && fieldDataset.length}
+      <g transition:fade>
+        <foreignObject x="0" y="0" width={innerW} height={innerH}>
+          <PlaneSeating country="China" fieldData={fieldData} />
+        </foreignObject>
+      </g>
+      {/if}
+      {#if scrollIndex == 3 && fieldDataset.length}
+      <g transition:fade>
+        <foreignObject x="0" y="0" width={innerW} height={innerH}>
+          <PlaneSeating country="United Kingdom" fieldData={fieldData} />
+        </foreignObject>
+      </g>
+      {/if}
+    </g>
+ </svg>
 
