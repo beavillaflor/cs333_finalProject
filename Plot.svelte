@@ -6,6 +6,7 @@
   import { extent } from "d3-array";
   import { fade } from "svelte/transition";
   import PlaneSeating from "./PlaneSeating.svelte";
+  import Treemap from "./Treemap.svelte";
 
   let { scrollIndex = $bindable() } = $props();
 
@@ -69,6 +70,41 @@
       undeclared: parseFloat(d["Undeclared"]) || 0
     }));
   });
+
+  // i am aware this is a very inefficient way to load the data, but this was the easiest way to structure it hierarchically
+  // works only in this instance as it is defined, limited categorical data
+  let treemapData = { "name": "INTERNATIONAL STUDENTS!", 
+  "children": 
+  [ { "name" : "Agriculture", "children": [ {"name" : "Agriculture", "value": 8560, "colour":"#009988"}, {"name" : "Natural Resources and Conservation", "value": 5747, "colour":"#009988"} ]}, 
+  { "name" : "Business and Management", "value": 159810, "colour":"#4477AA" }, 
+  { "name" : "Communications and Journalism", "children": [ {"name" : "Communication, Journalism", "value": 18165, "colour":"#009988"}, {"name" : "Communications Technologies/Technicians", "value": 3316, "colour":"#009988"} ]},
+  { "name" : "Education", "value": 15590, "colour":"#66CCEE" }, 
+  { "name" : "Engineering", "children": [ {"name" : "Construction Trades", "value": 294, "colour":"#228833"}, {"name" : "Engineering", "value": 188574, "colour":"#228833"}, 
+    {"name" : "Engineering Technologies/Technicians", "value": 17465, "colour":"#228833"	}, {"name" : "Mechanic and Repair Technologies/Technicians", "value": 276, "colour":"#228833"	},
+    {"name" : "Military Technologies", "value": 674, "colour":"#228833"	}, {"name" : "Precision Production", "value": 66, "colour":"#228833" }, {"name" : "Transportation and Materials Moving", "value": 2814, "colour":"#228833"	}
+  ]},
+  { "name" : "Fine and Applied Arts", "children": [ {"name" : "Architecture", "value": 13425, "colour":"#CCBB44"}, {"name" : "Visual and Performing Arts", "value": 40734, "colour":"#CCBB44"} ]},
+  { "name" : "Health Professions", "children": [ {"name" : "Health Professions", "value": 35864, "colour":"#EE6677"}, {"name" : "Residency Programs", "value": 751, "colour":"#EE6677"} ]},
+  { "name" : "Humanities", "children": [ {"name" : "English Language and Literature/Letters", "value": 4288, "colour":"#AA3377"}, {"name" : "Foreign Languages, Literatures, and Linguistics", "value": 6250, "colour":"#AA3377"}, 
+    {"name" : "Philosophy and Religious Studies", "value": 2946, "colour":"#AA3377"	}, {"name" : "Theology and Religious Vocations", "value": 2453, "colour":"#AA3377" }
+  ]},
+  { "name" : "Intensive English", "value": 9750, "colour":"#BBBBBB" },
+  { "name" : "Legal Studies and Law Enforcement", "children": [ {"name" : "Homeland Security, Law Enforcement, and Firefighting", "value": 2118, "colour":"#009988"}, {"name" : "Legal Professions and Studies", "value": 13386, "colour":"#009988"} ]},
+  { "name" : "Math and Computer Science", "children": [ {"name" : "Computer and Information Sciences", "value": 236922, "colour":"#9966CC"}, {"name" : "Mathematics and Statistics", "value": 44000, "colour":"#9966CC"} ]},
+  { "name" : "Physical and Life Sciences", "children": [ {"name" : "Biological and Biomedical Sciences", "value": 53139, "colour":"#33BBEE"}, {"name" : "Physical Sciences", "value": 35060, "colour":"#33BBEE"},
+    {"name" : "Science Technologies/Technicians", "value": 518, "colour":"#33BBEE"}
+   ]},
+  { "name" : "Social Sciences", "children": [ {"name" : "Area, Ethnic, Cultural, and Gender Studies", "value": 2389, "colour":"#EE7733"}, {"name" : "History", "value": 2584, "colour":"#EE7733"}, 
+    {"name" : "Psychology", "value": 18468, "colour":"#EE7733"	}, {"name" : "Public Administration and Social Service Professions", "value": 7859, "colour":"#EE7733"	},
+    {"name" : "Social Sciences", "value": 53007, "colour":"#EE7733"	}
+  ]},
+  { "name" : "Other Fields of Study", "children": [ {"name" : "Basic Skills", "value": 2298, "colour": "#009988"}, {"name" : "Family and Consumer Sciences/Human Sciences", "value": 1979, "colour": "#009988"}, 
+    {"name" : "Liberal Arts and Sciences/General Studies", "value": 41810, "colour": "#009988"	}, {"name" : "Library Science", "value": 562, "colour": "#009988"	},
+    {"name" : "Multi/Interdisciplinary Studies", "value": 47526, "colour": "#009988"	}, {"name" : "Parks, Recreation, Leisure, and Fitness Studies", "value": 6372, "colour": "#009988"	}, {"name" : "Personal and Culinary Services", "value": 1834, "colour": "#009988" },
+    {"name" : "Reserve Officer Training Corps", "value": 59, "colour": "#009988"	},
+  ]},
+  { "name" : "Undeclared", "value": 16988, "colour": "#EE3377" }, 
+  ]};
 
   const innerW = $derived(width - margin.left - margin.right);
   const innerH = $derived(height - margin.top - margin.bottom);
@@ -278,6 +314,15 @@
         </foreignObject>
       </g>
       {/if}
+    </g>
+
+    <!-- TREEMAP SECTION -->
+    <g transform="translate({margin.left}, {margin.top})">
+    {#if scrollIndex == 5 && treemapData}
+      <g transition:fade>
+        <Treemap data={treemapData} />
+      </g>
+    {/if}
     </g>
  </svg>
 
