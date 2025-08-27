@@ -23,11 +23,11 @@
 
   // create colour mapping using Tol's Bright 12 (colourblind-friendly)
   const tolBright12 = [
-  '#4477AA','#66CCEE','#228833','#CCBB44',
-  '#EE6677','#AA3377','#BBBBBB',
-  '#9966CC','#33BBEE','#EE7733',
-  '#009988','#EE3377'
-];
+    '#4477AA','#66CCEE','#228833','#CCBB44',
+    '#EE6677','#AA3377','#BBBBBB',
+    '#9966CC','#33BBEE','#EE7733',
+    '#009988','#EE3377'
+  ];
 
   let colourScheme = $derived.by(() => {
     const scheme = {};
@@ -213,7 +213,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
       transition: transform 0.2s, box-shadow 0.2s;
       border-radius: 2px;
       position: relative;

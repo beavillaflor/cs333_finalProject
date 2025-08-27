@@ -3,7 +3,7 @@
     import Plot from "./Plot.svelte";
 
     let value;
-    const nsteps = 4
+    const nsteps = 8;
     const steps = Array.from(Array(nsteps).keys())
 
     let size = 20;
@@ -13,10 +13,14 @@
     let padding = 20; 
 
     let text = [
-        "Data from OpenDoors shows a nearly year-on-year increase of international students coming to the United States.",
-        "But who are these students, and where do they come from?",
-        "A plane from China has just landed with 100 students on board. But what are they all here to study? Have a look at their seats to find out.",
-        "Imagine instead that this plane of 100 international students is arriving from the United Kingdom. Let’s see how their fields of study compare to those of students from China.",
+        "Data from OpenDoors shows a nearly year-on-year increase of international students coming to the United States. Dips in enrollment have coincided with some policy changes. Hover over the rectangles to learn more.",
+        "Let's look at the 2023/2024 academic year, where over a million students came to the U.S. That's around 8000 Boeing 737s! ✈️ Hover over to see the number of students studying each program.",
+        "But who are these students, and where do they come from? Let's look at the top 25 countries from the 23/24 academic year.",
+        "A plane from China has just landed with 100 students on board, a typical size for a Boeing 737. ✈️ But what are they all here to study? Have a look at their seats to find out.",
+        "A stereotype is that Asian students study STEM subjects more than their European counterparts. Is that true?",
+        "This plane of 100 students is arriving from the United Kingdom. Let’s see how their fields of study compare to those of students from China.",
+        "Comparing the two planes side by side gives some merit to the claim. Based on proportion, engineering, math and computer science subjects are very popular with Chinese students — whereas British students often study business or social sciences.",
+        "Irrespective of what they study, what unifies the regions is how students are still arriving to the U.S. en masse from these areas. Despite ongoing policy tensions in the U.S., it's clear international students are here to stay."
     ];
 </script>
 
@@ -40,7 +44,7 @@
         </div>
     </div>
     <div class='hero'>
-        <h1>The End!</h1>
+        <h1>Thanks for exploring our vis!</h1>
     </div>
 </section>
 
